@@ -19,6 +19,14 @@ public class Emprestimo {
         this.returnDate = returnDate;
     }
 
+    public Emprestimo(Long id, Long bookId, Long userId, LocalDateTime loanDate, LocalDateTime dueDate) {
+        this.id = id;
+        this.bookId = bookId;
+        this.userId = userId;
+        this.loanDate = loanDate;
+        this.dueDate = dueDate;
+    }
+
     public Emprestimo(Long bookId, Long userId, LocalDateTime loanDate, LocalDateTime dueDate) {
         this(null, bookId, userId, loanDate, dueDate, null);
     }

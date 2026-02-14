@@ -14,6 +14,7 @@ import com.avanade.livraria.repository.JdbcRepositorioEmprestimo;
 import com.avanade.livraria.repository.JdbcRepositorioUsuario;
 import com.avanade.livraria.repository.RepositorioLivro;
 import com.avanade.livraria.repository.RepositorioMulta;
+import com.avanade.livraria.exceptions.InvalidarEmprestimoException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ public class ServicoMultaTest {
     }
 
     @Test
-    void devolverLivroNoPrazo(){
+    void devolverLivroNoPrazo() throws InvalidarEmprestimoException {
         Livro l1 = new Livro("TDD", "Author", "111", 2);
         livroRepo.save(l1);
         Usuario u1 = new Usuario("Tester", "000.000.000-00", TipoUsuario.ESTUDANTE);
@@ -64,7 +65,7 @@ public class ServicoMultaTest {
     }
 
     @Test
-    void devolverLivroAlemDoPrazo(){
+    void devolverLivroAlemDoPrazo() throws InvalidarEmprestimoException {
         Livro l1 = new Livro("TDD", "Author", "111", 2);
         livroRepo.save(l1);
         Usuario u1 = new Usuario("Tester", "000.000.000-00", TipoUsuario.ESTUDANTE);
@@ -78,7 +79,7 @@ public class ServicoMultaTest {
     }
 
     @Test
-    void verificarMultasExistentes(){
+    void verificarMultasExistentes() throws InvalidarEmprestimoException {
         Livro l1 = new Livro("TDD", "Author", "111", 3);
         livroRepo.save(l1);
         Usuario u1 = new Usuario("Tester", "tester@gmail.com", TipoUsuario.ESTUDANTE);
@@ -111,9 +112,9 @@ public class ServicoMultaTest {
     }
 
     @Test 
-    void verificarMultasNaoPagas(){
+    void verificarMultasNaoPagas() throws InvalidarEmprestimoException {
 
-         Livro l1 = new Livro("TDD", "Author", "111", 3);
+        Livro l1 = new Livro("TDD", "Author", "111", 3);
         livroRepo.save(l1);
         Usuario u1 = new Usuario("Tester", "tester@gmail.com", TipoUsuario.ESTUDANTE);
         Usuario u2 = new Usuario("Tester2", "tester2@gmail.com", TipoUsuario.ESTUDANTE);
@@ -141,7 +142,6 @@ public class ServicoMultaTest {
             .anyMatch(u -> u.getEmail() == "tester2@gmail.com");
 
         assertEquals(2, repositorioMulta.findMultasNaoPagas().size());
-        
 
     }
 }

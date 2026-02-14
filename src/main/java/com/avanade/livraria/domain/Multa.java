@@ -15,6 +15,12 @@ public class Multa {
         this.dataPagamento = dataPagamento;
     }
 
+    public Multa(Long emprestimoId, BigDecimal valor, java.time.LocalDateTime dataPagamento) {
+        this.emprestimoId = emprestimoId;
+        this.valor = valor;
+        this.dataPagamento = dataPagamento;
+    }
+
     public Multa(Long emprestimoId, BigDecimal valor) {
         this(null, emprestimoId, valor, null);
     }

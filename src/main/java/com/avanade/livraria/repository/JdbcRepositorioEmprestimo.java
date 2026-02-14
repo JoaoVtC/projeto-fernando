@@ -19,6 +19,7 @@ public class JdbcRepositorioEmprestimo implements RepositorioEmprestimo {
      public JdbcRepositorioEmprestimo(Connection conn) {
         this.conn = conn;
     }
+
     public JdbcRepositorioEmprestimo(Connection conn, JdbcRepositorioLivro livroRepo,
             JdbcRepositorioUsuario usuarioRepo) {
         this.conn = conn;
@@ -77,6 +78,14 @@ public class JdbcRepositorioEmprestimo implements RepositorioEmprestimo {
             ps.setTimestamp(1, Timestamp.valueOf(dataDevolvida));
             ps.setLong(2, EmprestimoId);
             ps.executeUpdate();
+            Optional<Emprestimo> emprestimo = findById(EmprestimoId);
+            if (emprestimo.isPresent()) {
+                Livro livro = livroRepo.findById(emprestimo.get().getBookId());
+                if (livro != null) {
+                    livro.setAvailableCopies(livro.getAvailableCopies() + 1);
+                    livroRepo.update(livro);
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -97,7 +106,28 @@ public class JdbcRepositorioEmprestimo implements RepositorioEmprestimo {
             return emprestimosAtivos;
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-        
+        }   
     }
+
+    @Override
+    public List<Emprestimo> findEmprestimosPorUsuario(Long usuarioId){
+        String sql = "SELECT * FROM loans WHERE user_id = ?";
+        List<Emprestimo> emprestimosAtivos = new ArrayList<>();
+
+         try (PreparedStatement ps = conn.prepareStatement(sql); ) {
+                ps.setLong(1, usuarioId);
+                ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                  LocalDateTime verificaData = rs.getTimestamp("return_date") != null ?  rs.getTimestamp("return_date").toLocalDateTime() : null;
+                Emprestimo emprestimo = new Emprestimo(rs.getLong("id"), rs.getLong("book_id"), rs.getLong("user_id"), rs.getTimestamp("loan_date").toLocalDateTime(), rs.getTimestamp("due_date").toLocalDateTime(), verificaData);
+                emprestimosAtivos.add(emprestimo);
+            }
+
+            return emprestimosAtivos;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    };
 }

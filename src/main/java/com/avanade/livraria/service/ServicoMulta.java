@@ -45,7 +45,7 @@ public class ServicoMulta {
         Integer diasAtraso = atraso.getDays();
         if(diasAtraso > 0){
             BigDecimal valor = BigDecimal.valueOf(diasAtraso * 1);
-            Multa multa = new Multa(emprestimoId, valor);
+            Multa multa = new Multa(emprestimoId, valor, null);
             repositorioMulta.save(multa);
             return multa.getValor();
         }

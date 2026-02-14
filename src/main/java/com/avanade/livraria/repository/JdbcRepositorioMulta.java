@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.sql.Statement;
 
 import com.avanade.livraria.domain.Livro;
@@ -63,8 +64,9 @@ public class JdbcRepositorioMulta implements RepositorioMulta {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    LocalDateTime verificaData = rs.getTimestamp("dataPagamento") != null ?  rs.getTimestamp("dataPagamento").toLocalDateTime() : null;
                     Multa multa = new Multa(rs.getLong("id"), rs.getLong("emprestimoId"), rs.getBigDecimal("valor"), 
-                    rs.getTimestamp("dataPagamento").toLocalDateTime());
+                    verificaData);
                     return multa;
                 }
             }
