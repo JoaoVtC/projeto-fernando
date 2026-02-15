@@ -14,6 +14,7 @@ import com.avanade.livraria.repository.JdbcRepositorioEmprestimo;
 import com.avanade.livraria.repository.JdbcRepositorioUsuario;
 import com.avanade.livraria.repository.RepositorioMulta;
 import com.avanade.livraria.exceptions.InvalidarEmprestimoException;
+import com.avanade.livraria.exceptions.InvalidarRenovacao;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -203,6 +204,25 @@ public class ServicoEmprestimoTest {
        assertThrows(InvalidarEmprestimoException.class, () -> {
            servico.criarEmprestimo(u2.getId(), l2.getId());
        }, "Deveria lançar InvalidarEmprestimoException - usuário com multa pendente");
+    }
+
+    @Test
+    void limiteRenovacoes() throws InvalidarRenovacao, InvalidarEmprestimoException {
+        Livro l2 = new Livro("Vidas Secas", "Graciliano Ramos", "111", 6);
+        livroRepo.save(l2);
+        Usuario u2 = new Usuario("Tester2", "tester2@gmail.com", TipoUsuario.PROFESSOR);
+        usuarioRepo.save(u2);
+
+       Emprestimo emprestimo = servico.criarEmprestimo(u2.getId(), l2.getId());
+       servico.renovarEmprestimo(emprestimo.getId());
+       servico.renovarEmprestimo(emprestimo.getId());
+
+        Emprestimo emprestimoNovo = emprestimoRepo.findById(emprestimo.getId()).get();
+        assertEquals(2, emprestimoNovo.getRenovacoes());
+        assertThrows(InvalidarRenovacao.class, () -> {
+                  servico.renovarEmprestimo(emprestimoNovo.getId());
+       }, "Deveria lançar InvalidarRenovacao - usuário com multa pendente");
+
     }
 
 }

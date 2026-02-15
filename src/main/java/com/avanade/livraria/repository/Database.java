@@ -16,7 +16,7 @@ public class Database {
         try (Connection c = getConnection(); Statement s = c.createStatement()) {
             s.execute("CREATE TABLE IF NOT EXISTS books (id IDENTITY PRIMARY KEY, title VARCHAR(255), author VARCHAR(255), isbn VARCHAR(50), total_copies INT, available_copies INT)");
             s.execute("CREATE TABLE IF NOT EXISTS users (id IDENTITY PRIMARY KEY, name VARCHAR(255), document VARCHAR(100), user_type VARCHAR(20))");
-            s.execute("CREATE TABLE IF NOT EXISTS loans (id IDENTITY PRIMARY KEY, book_id BIGINT, user_id BIGINT, loan_date TIMESTAMP, due_date TIMESTAMP, return_date TIMESTAMP)");
+            s.execute("CREATE TABLE IF NOT EXISTS loans (id IDENTITY PRIMARY KEY, book_id BIGINT, user_id BIGINT, loan_date TIMESTAMP, due_date TIMESTAMP, return_date TIMESTAMP, renovacoes INT)");
             s.execute("CREATE TABLE IF NOT EXISTS multas (id IDENTITY PRIMARY KEY, emprestimoId BIGINT, valor DECIMAL(10,2), dataPagamento TIMESTAMP)");
 
         }

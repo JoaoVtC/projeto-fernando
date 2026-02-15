@@ -9,6 +9,7 @@ import com.avanade.livraria.DTO.UsuarioMultaDTO;
 import com.avanade.livraria.domain.Emprestimo;
 import com.avanade.livraria.domain.Usuario;
 import com.avanade.livraria.exceptions.InvalidarEmprestimoException;
+import com.avanade.livraria.exceptions.InvalidarRenovacao;
 import com.avanade.livraria.domain.TipoUsuario;
 import com.avanade.livraria.repository.RepositorioLivro;
 import com.avanade.livraria.repository.RepositorioMulta;
@@ -150,5 +151,13 @@ public class ServicoEmprestimo {
             return relatorioUsuario;
         }
 
+        public void renovarEmprestimo(Long emprestimoId) throws InvalidarRenovacao{
+        Emprestimo emprestimo = emprestimoRepo.findById(emprestimoId).get();
+        
+        if(emprestimo.getRenovacoes() >= 2) throw new InvalidarRenovacao();
+
+        emprestimo.setRenovacoes(emprestimo.getRenovacoes() + 1);
+        emprestimoRepo.update(emprestimo);
+        }
     
 }

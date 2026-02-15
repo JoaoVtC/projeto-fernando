@@ -12,4 +12,5 @@ public interface RepositorioEmprestimo {
     void saveDataDevolucao(Long EmprestimoId, java.time.LocalDateTime dataDevolvida);
     List<Emprestimo> findEmprestimosAtivos();
     List<Emprestimo> findEmprestimosPorUsuario(Long usuarioId);
+    void update(Emprestimo emprestimo);
 }

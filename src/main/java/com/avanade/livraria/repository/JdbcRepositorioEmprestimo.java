@@ -29,7 +29,7 @@ public class JdbcRepositorioEmprestimo implements RepositorioEmprestimo {
 
     @Override
     public Emprestimo save(Emprestimo emprestimo) {
-        String sql = "INSERT INTO loans(book_id,user_id,loan_date,due_date,return_date) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO loans(book_id,user_id,loan_date,due_date,return_date,renovacoes) VALUES (?,?,?,?,?,?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, emprestimo.getBookId());
             ps.setLong(2, emprestimo.getUserId());
@@ -39,6 +39,7 @@ public class JdbcRepositorioEmprestimo implements RepositorioEmprestimo {
                 ps.setTimestamp(5, Timestamp.valueOf(emprestimo.getReturnDate()));
             else
                 ps.setTimestamp(5, null);
+            ps.setInt(6, 0);
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next())
@@ -52,16 +53,19 @@ public class JdbcRepositorioEmprestimo implements RepositorioEmprestimo {
 
     @Override
     public Optional<Emprestimo> findById(Long id) {
-        String sql = "SELECT id,book_id,user_id,loan_date,due_date,return_date FROM loans WHERE id = ?";
+        String sql = "SELECT id,book_id,user_id,loan_date,due_date,return_date,renovacoes FROM loans WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Emprestimo l = new Emprestimo(rs.getLong("id"), rs.getLong("book_id"), rs.getLong("user_id"),
+                    Emprestimo l = new Emprestimo(
+                            rs.getLong("id"), 
+                            rs.getLong("book_id"), 
+                            rs.getLong("user_id"),
                             rs.getTimestamp("loan_date").toLocalDateTime(),
                             rs.getTimestamp("due_date").toLocalDateTime(),
-                            rs.getTimestamp("return_date") != null ? rs.getTimestamp("return_date").toLocalDateTime()
-                                    : null);
+                            rs.getTimestamp("return_date") != null ? rs.getTimestamp("return_date").toLocalDateTime() : null,
+                            rs.getInt("renovacoes"));
                     return Optional.of(l);
                 }
             }
@@ -98,8 +102,16 @@ public class JdbcRepositorioEmprestimo implements RepositorioEmprestimo {
 
          try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                
-                Emprestimo emprestimo = new Emprestimo(rs.getLong("book_id"), rs.getLong("user_id"), rs.getTimestamp("loan_date").toLocalDateTime(), rs.getTimestamp("due_date").toLocalDateTime());
+                LocalDateTime returnDate = rs.getTimestamp("return_date") != null ? rs.getTimestamp("return_date").toLocalDateTime() : null;
+                Integer renovacoes = rs.getInt("renovacoes");
+                Emprestimo emprestimo = new Emprestimo(
+                    rs.getLong("id"),
+                    rs.getLong("book_id"), 
+                    rs.getLong("user_id"), 
+                    rs.getTimestamp("loan_date").toLocalDateTime(), 
+                    rs.getTimestamp("due_date").toLocalDateTime(),
+                    returnDate,
+                    renovacoes);
                 emprestimosAtivos.add(emprestimo);
             }
 
@@ -120,7 +132,15 @@ public class JdbcRepositorioEmprestimo implements RepositorioEmprestimo {
 
             while (rs.next()) {
                   LocalDateTime verificaData = rs.getTimestamp("return_date") != null ?  rs.getTimestamp("return_date").toLocalDateTime() : null;
-                Emprestimo emprestimo = new Emprestimo(rs.getLong("id"), rs.getLong("book_id"), rs.getLong("user_id"), rs.getTimestamp("loan_date").toLocalDateTime(), rs.getTimestamp("due_date").toLocalDateTime(), verificaData);
+                  Integer renovacoes = rs.getInt("renovacoes");
+                Emprestimo emprestimo = new Emprestimo(
+                    rs.getLong("id"), 
+                    rs.getLong("book_id"), 
+                    rs.getLong("user_id"), 
+                    rs.getTimestamp("loan_date").toLocalDateTime(), 
+                    rs.getTimestamp("due_date").toLocalDateTime(), 
+                    verificaData,
+                    renovacoes);
                 emprestimosAtivos.add(emprestimo);
             }
 
@@ -130,4 +150,24 @@ public class JdbcRepositorioEmprestimo implements RepositorioEmprestimo {
         }
 
     };
+
+       @Override
+    public void update(Emprestimo emprestimo) {
+        String sql = "UPDATE loans SET book_id=?, user_id=?, loan_date=?, due_date=?, return_Date=?, renovacoes=? WHERE id=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, emprestimo.getBookId());
+            ps.setLong(2, emprestimo.getUserId());
+            ps.setTimestamp(3, Timestamp.valueOf(emprestimo.getLoanDate()));
+            ps.setTimestamp(4, Timestamp.valueOf(emprestimo.getDueDate()));
+            if (emprestimo.getReturnDate() != null)
+                ps.setTimestamp(5, Timestamp.valueOf(emprestimo.getReturnDate()));
+            else
+                ps.setTimestamp(5, null);
+            ps.setInt(6, emprestimo.getRenovacoes() != null ? emprestimo.getRenovacoes() : 0);
+            ps.setLong(7, emprestimo.getId());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
